@@ -1,0 +1,14 @@
+{
+  "name": "jumpy",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "grunt"
+  },
+  "author": "YOUR NAME HERE",
+  "license": "MIT",
+  "description": "A Phaser game",
+  "devDependencies": {
+    "grunt": "^1.6.1",
+    "grunt-contrib-connect": "^5.0.0"
+  }
+}
