@@ -1,0 +1,251 @@
+{
+	"textures": [
+		{
+			"image": "fire_player.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 1792,
+				"h": 768
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "Attack_1.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 512,
+						"h": 128
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 512,
+						"h": 128
+					},
+					"frame": {
+						"x": 0,
+						"y": 0,
+						"w": 512,
+						"h": 128
+					}
+				},
+				{
+					"filename": "Attack_2.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 512,
+						"h": 128
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 512,
+						"h": 128
+					},
+					"frame": {
+						"x": 512,
+						"y": 0,
+						"w": 512,
+						"h": 128
+					}
+				},
+				{
+					"filename": "Charge.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 768,
+						"h": 64
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 768,
+						"h": 64
+					},
+					"frame": {
+						"x": 1024,
+						"y": 0,
+						"w": 768,
+						"h": 64
+					}
+				},
+				{
+					"filename": "Dead.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 768,
+						"h": 128
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 768,
+						"h": 128
+					},
+					"frame": {
+						"x": 0,
+						"y": 128,
+						"w": 768,
+						"h": 128
+					}
+				},
+				{
+					"filename": "Fireball.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 128
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 128
+					},
+					"frame": {
+						"x": 768,
+						"y": 128,
+						"w": 1024,
+						"h": 128
+					}
+				},
+				{
+					"filename": "Flame_jet.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1792,
+						"h": 128
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1792,
+						"h": 128
+					},
+					"frame": {
+						"x": 0,
+						"y": 256,
+						"w": 1792,
+						"h": 128
+					}
+				},
+				{
+					"filename": "Hurt.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 384,
+						"h": 128
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 384,
+						"h": 128
+					},
+					"frame": {
+						"x": 0,
+						"y": 384,
+						"w": 384,
+						"h": 128
+					}
+				},
+				{
+					"filename": "Idle.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 896,
+						"h": 128
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 896,
+						"h": 128
+					},
+					"frame": {
+						"x": 384,
+						"y": 384,
+						"w": 896,
+						"h": 128
+					}
+				},
+				{
+					"filename": "Jump.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1152,
+						"h": 128
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1152,
+						"h": 128
+					},
+					"frame": {
+						"x": 0,
+						"y": 512,
+						"w": 1152,
+						"h": 128
+					}
+				},
+				{
+					"filename": "Run.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 128
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 128
+					},
+					"frame": {
+						"x": 0,
+						"y": 640,
+						"w": 1024,
+						"h": 128
+					}
+				},
+				{
+					"filename": "Walk.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 768,
+						"h": 128
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 768,
+						"h": 128
+					},
+					"frame": {
+						"x": 1024,
+						"y": 640,
+						"w": 768,
+						"h": 128
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:cbac4349e76f492c424c672d9a644b6e:53e0a2650c6491cf9e9ffbff7f21439e:111d724548c8fe4b4a782c7028059573$"
+	}
+}
