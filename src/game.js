@@ -24,12 +24,12 @@ var isTweening = false;
 var isJumping = false;
 var healthPercentage = 1.0;
 var flameJet;
-var isCasting = false;  // Controle de lançamento da magia
-var cooldown = 3000;    // Tempo de recarga em milissegundos (3 segundos)
-var lastCastTime = 0;   // Controle do último tempo de lançamento da magia
+var isCasting = false;  // Control for casting the spell
+var cooldown = 3000;    // Cooldown time in milliseconds (3 seconds)
+var lastCastTime = 0;   // Control for the last time the spell was cast
 
 function preload() {
-    // Carregar os assets existentes
+    // Load existing assets
     this.load.image('bg', 'assets/War.png');
     this.load.image('road', 'assets/roadnew.png');
     this.load.spritesheet('m1', 'assets/m1/Walk1.png', { frameWidth: 193, frameHeight: 300 });
@@ -38,18 +38,22 @@ function preload() {
     this.load.image('redfill', 'assets/health/redfill.png');
     this.load.image('bluefill', 'assets/health/bluefill.png');
 
-    // Carregar as animações do firePlayer (idle, walk, run, jump, e flame attack)
+    // Load firePlayer animations (idle, walk, run, jump, and flame attack)
     this.load.spritesheet('fire_idle', 'assets/m2/idle_fire.png', { frameWidth: 68, frameHeight: 68 });
     this.load.spritesheet('fire_walk', 'assets/m2/walk_fire.png', { frameWidth: 68, frameHeight: 68 });
     this.load.spritesheet('fire_run', 'assets/m2/run_fire.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('fire_jump', 'assets/m2/jump_fire.png', { frameWidth: 72, frameHeight: 72 });
+    this.load.spritesheet('fire_dead', 'assets/m2/dead_fire.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('fire_hurt', 'assets/m2/hurt_fire.png', { frameWidth: 64, frameHeight: 64 });
 
-    // Carregar a magia flame jet
+    // Load the flame jet spell
     this.load.spritesheet('flame_jet_fire', 'assets/m2/flame_jet_fire.png', { frameWidth: 118, frameHeight: 118 });
+    this.load.spritesheet('fire_attack1', 'assets/m2/attack1_fire.png', { frameWidth: 76, frameHeight: 76 });
+
 }
 
 function create() {
-    // Criação do cenário
+    // Create the background
     background = this.add.tileSprite(0, 0, 3000, 600, 'bg').setOrigin(0.5, 0);
     this.add.image(750, 60, 'redhealth');
     this.add.image(350, 60, 'bluehealth').setFlipX(true);
@@ -60,19 +64,22 @@ function create() {
     var platforms = this.physics.add.staticGroup();
     platforms.create(500, 650, 'road').setOrigin(0.5, 0.5);
 
-    // Criação do player m1
+    // Create player m1
     player = this.physics.add.sprite(100, 100, 'm1');
     this.physics.add.collider(player, platforms);
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
 
-    // Criação do firePlayer
+    // Create firePlayer
     firePlayer = this.physics.add.sprite(300, 100, 'fire_idle');
     firePlayer.setScale(2);
     this.physics.add.collider(firePlayer, platforms);
     firePlayer.setCollideWorldBounds(true);
+    flameJet = this.add.sprite(firePlayer.x, firePlayer.y, 'flame_jet_fire');
+    flameJet.setScale(2);
+    flameJet.setVisible(false);
 
-    // Animações do firePlayer
+    // FirePlayer animations
     this.anims.create({
         key: 'fire_idle',
         frames: this.anims.generateFrameNumbers('fire_idle', { start: 0, end: 6 }),
@@ -101,30 +108,59 @@ function create() {
         repeat: -1
     });
 
-    firePlayer.play('fire_idle');
-
-    // Animação de magia (flame jet)
     this.anims.create({
-        key: 'flame_jet',
-        frames: this.anims.generateFrameNumbers('flame_jet_fire', { start: 0, end: 13 }), // 14 frames (0 a 13)
-        frameRate: 15,
-        repeat: 0 // A magia só deve acontecer uma vez por ativação
+        key: 'fire_attack1',
+        frames: this.anims.generateFrameNumbers('fire_attack1', { start: 0, end: 5 }), // 6 frames
+        frameRate: 10,
+        repeat: 0 // Do not repeat
     });
 
-    // Adiciona as teclas de controle
+    this.anims.create({
+        key: 'fire_dead',
+        frames: this.anims.generateFrameNumbers('fire_dead', { start: 0, end: 5 }), // 6 frames
+        frameRate: 3,
+        repeat: 0
+    });
+
+    this.anims.create({
+        key: 'fire_hurt',
+        frames: this.anims.generateFrameNumbers('fire_hurt', { start: 0, end: 2 }), // 3 frames
+        frameRate: 3,
+        repeat: 0
+    });
+
+    firePlayer.play('fire_idle');
+
+    // Flame jet spell animation
+    this.anims.create({
+        key: 'flame_jet',
+        frames: this.anims.generateFrameNumbers('flame_jet_fire', { start: 0, end: 13 }), // 14 frames (0 to 13)
+        frameRate: 15,
+        repeat: 0 // The spell should only happen once per activation
+    });
+
+    // Add control keys
     cursors = this.input.keyboard.createCursorKeys();
     shiftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
     spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    fKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F); // Tecla para lançar a magia
-
+    fKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F); // Key for casting the spell
+    attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);  // Key 1 for attack
+    hurtKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);   // Key 2 to get hurt
+    deadKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE); // Key 3 to die
     aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
     dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 }
+var isAttacking = false;
+var isHurt = false;
+var isDead = false;
 
 function update() {
     const currentTime = this.time.now;
-
-    // Controles do firePlayer
+    if (isDead || isHurt || isAttacking) {
+        // If the player is dead, hurt, or attacking, prevent other controls
+        return;
+    }
+    // FirePlayer controls
     if (shiftKey.isDown && (cursors.right.isDown || cursors.left.isDown)) {
         firePlayer.setVelocityX(cursors.right.isDown ? 240 : -240);
         firePlayer.anims.play('fire_run', true);
@@ -149,20 +185,44 @@ function update() {
         isJumping = false;
     }
 
-    // Lançar a magia de fogo (tecla F) com cooldown
+    // Cast the fire spell (F key) with cooldown
     if (Phaser.Input.Keyboard.JustDown(fKey) && !isCasting && currentTime - lastCastTime >= cooldown) {
         isCasting = true;
         lastCastTime = currentTime;
 
-        // Criação da magia flameJet
-        flameJet = this.add.sprite(firePlayer.x + (firePlayer.flipX ? -60 : 60), firePlayer.y, 'flame_jet_fire');
-        flameJet.setScale(2);
-        flameJet.anims.play('flame_jet', true);
+        // Position the flameJet based on firePlayer's position
+        flameJet.setPosition(firePlayer.x + (firePlayer.flipX ? -60 : 60), firePlayer.y);
+        flameJet.setFlipX(firePlayer.flipX);  // Flip the spell if the player is facing left
+        flameJet.setVisible(true);
+        flameJet.anims.play('flame_jet');
 
-        // Destrói a magia após a animação
         flameJet.on('animationcomplete', () => {
-            flameJet.destroy();
-            isCasting = false;  // Permite lançar a magia novamente após a destruição
+            flameJet.setVisible(false);
+            isCasting = false;
         });
+    }
+
+    // Attacking with Key 1
+    if (Phaser.Input.Keyboard.JustDown(attackKey)) {
+        isAttacking = true;
+        firePlayer.anims.play('fire_attack1', true);
+        firePlayer.on('animationcomplete', () => {
+            isAttacking = false;
+        });
+    }
+
+    // Taking damage with Key 2
+    if (Phaser.Input.Keyboard.JustDown(hurtKey)) {
+        isHurt = true;
+        firePlayer.anims.play('fire_hurt', true);
+        firePlayer.on('animationcomplete', () => {
+            isHurt = false;
+        });
+    }
+
+    // Dying with Key 3
+    if (Phaser.Input.Keyboard.JustDown(deadKey)) {
+        isDead = true;
+        firePlayer.anims.play('fire_dead', true);
     }
 }
