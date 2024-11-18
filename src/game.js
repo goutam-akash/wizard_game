@@ -94,6 +94,12 @@ function create() {
         repeat: -1
     });
 
+    player.body.setGravityY(300);
+    gameOverText = this.add.text(config.width / 2, config.height / 2, 'Game Over', {
+        fontSize: '64px',
+        fill: '#ff0000', 
+    }).setOrigin(0.5).setVisible(false);
+    
     this.anims.create({
         key: 'fire_run',
         frames: this.anims.generateFrameNumbers('fire_run', { start: 0, end: 5 }),
