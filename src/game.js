@@ -76,9 +76,7 @@ function create() {
     player.body.setGravityY(300);
     gameOverText = this.add.text(config.width / 2, config.height / 2, 'Game Over', {
         fontSize: '64px',
-        fill: '#ff0000',
-        background: '#000000'
-
+        fill: '#ff0000', 
     }).setOrigin(0.5).setVisible(false);
     
 }
