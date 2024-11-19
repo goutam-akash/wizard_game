@@ -179,9 +179,19 @@ function update() {
     }
 
     // Update health bars
-    redHealthFill.setCrop(0, 0, redHealth * 5, redHealthFill.height);
-    var cropWidth = blueHealth * 2.5;
-    blueHealthFill.setCrop(blueHealthFill.width - cropWidth, 0, cropWidth, blueHealthFill.height);
+    function updateHealthBars() {
+        // Update red health bar
+        var redCropWidth = redHealth * 5; // Adjust multiplier if necessary
+        redHealthFill.setCrop(0, 0, Math.max(0, redCropWidth), redHealthFill.height); // Ensure no negative width
+    
+        // Update blue health bar
+        var blueCropWidth = blueHealth * 2.5; // Adjust multiplier if necessary
+        blueHealthFill.setCrop(blueHealthFill.width - Math.max(0, blueCropWidth), 0, Math.max(0, blueCropWidth), blueHealthFill.height);
+    }
+    
+    // Call this function inside the update function
+    updateHealthBars();
+    
 }
 
 
