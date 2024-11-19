@@ -38,6 +38,10 @@ function preload() {
     this.load.spritesheet('fire_walk', 'assets/m2/walk_fire123.png', { frameWidth: 108, frameHeight: 300 });
     this.load.spritesheet('fire_attack', 'assets/m2/flame_new.png', { frameWidth: 504, frameHeight: 325 });
     this.load.spritesheet('ice_attack', 'assets/m1/attack_ice.png', { frameWidth: 514, frameHeight: 300 });
+    this.load.spritesheet('ice_hurt','assets/m1/Hurt.png', { frameWidth: 210, frameHeight: 275 });
+    this.load.spritesheet('ice_dead','assets/m1/dead.png', { frameWidth: 406, frameHeight: 300 });
+    this.load.spritesheet('fire_hurt', 'assets/m2/hurt_fire1.png', { frameWidth: 300, frameHeight: 300 });
+    this.load.spritesheet('fire_dead', 'assets/m2/dead_fire1.png', { frameWidth: 300, frameHeight: 300 });
 }
 
 function create() {
@@ -88,8 +92,34 @@ function create() {
         frameRate: 10,
         repeat: 0
     });
-
+    this.anims.create({
     // Input bindings
+        key: 'ice_hurt',
+        frames: this.anims.generateFrameNumbers('ice_hurt', { start: 0, end: 4 }),
+        frameRate: 10,
+        repeat: 0 // Play the hurt animation once
+    });
+    this.anims.create({
+        key: 'ice_dead',
+        frames: this.anims.generateFrameNumbers('ice_dead', { start: 0, end: 3 }),
+        frameRate: 10,
+        repeat: 0 // Play the hurt animation once
+    });
+    this.anims.create({
+        key: 'fire_hurt',
+        frames: this.anims.generateFrameNumbers('fire_hurt', { start: 0, end: 2 }),
+        frameRate: 10,
+        repeat: 0 // Play the hurt animation once
+    });
+    
+    this.anims.create({
+        key: 'fire_dead',
+        frames: this.anims.generateFrameNumbers('fire_dead', { start: 0, end: 5 }),
+        frameRate: 10,
+        repeat: 0 // Play the hurt animation once
+    });
+    
+    
     cursors = this.input.keyboard.createCursorKeys();
     aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
     dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
@@ -209,10 +239,26 @@ function hitFirePlayer(player, firePlayer) {
 function hitPlayer(firePlayer, player) {
     if (isAttacking) {
         blueHealth -= 10;
+
         console.log("Blue health reduced to:", blueHealth); // Debugging
-        if (blueHealth < 0) blueHealth = 0;
-        if (blueHealth <= 0) {
+       
+       
+        // Ensure health doesn't go below 0
+        if (blueHealth < 0) {
+            blueHealth = 0;
+        }
+
+        // Update the health bar's crop based on the new health percentage
+        blueHealthFill.setCrop(0, 0, blueHealth * (blueHealthFill.width / 100), blueHealthFill.height);
+
+        // Play hurt animation
+        if (blueHealth > 0) {
+            player.anims.play('ice_hurt', true);
+        } else {
+            // Play death animation and show Game Over text
+            player.anims.play('ice_dead', true);
             gameOverText.setVisible(true);
+
         }
     }
 }
