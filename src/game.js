@@ -29,6 +29,7 @@ var redHealth = 100,
 var gameOverText;
 
 function preload() {
+<<<<<<< HEAD
   this.load.image("bg", "assets/War.png");
   this.load.image("road", "assets/roadnew.png");
   this.load.image("redhealth", "assets/health/red_meter.png");
@@ -160,6 +161,15 @@ function create() {
   spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
   console.log("Space key initialized:", spaceKey); // Debugging
+
+
+    this.input.keyboard.on('keydown-SHIFT', () => {
+        if (!isAttacking) {
+            fireAttackSound.play();
+        }
+    });
+
+    console.log("Space key initialized:", spaceKey); // Debugging
 }
 function update() {
   // Player movement
@@ -263,6 +273,41 @@ function update() {
 
   // Call this function inside the update function
   updateHealthBars();
+
+    // Fire attack for firePlayer
+    if (shiftKey.isDown && !isAttacking) {
+        console.log("Fire attack initiated");
+        isAttacking = true;
+    
+        // Play fire attack animation
+        firePlayer.anims.play('fire_attack', true);
+    
+        // Verificar colisão durante a animação
+        this.physics.overlap(firePlayer, player, hitPlayer, null, this);
+    
+        // Listen for animation completion
+        firePlayer.on('animationcomplete', (animation) => {
+            if (animation.key === 'fire_attack') {
+                console.log("Fire attack animation complete");
+                isAttacking = false;
+            }
+        });
+    }
+
+    // Update health bars
+    function updateHealthBars() {
+        // Update red health bar
+        var redCropWidth = redHealth * 5; // Adjust multiplier if necessary
+        redHealthFill.setCrop(0, 0, Math.max(0, redCropWidth), redHealthFill.height); // Ensure no negative width
+    
+        // Update blue health bar
+        var blueCropWidth = blueHealth * 2.5; // Adjust multiplier if necessary
+        blueHealthFill.setCrop(blueHealthFill.width - Math.max(0, blueCropWidth), 0, Math.max(0, blueCropWidth), blueHealthFill.height);
+    }
+    
+    // Call this function inside the update function
+    updateHealthBars();
+    
 }
 
 function hitFirePlayer(icePlayer, firePlayer) {
