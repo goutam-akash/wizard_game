@@ -227,14 +227,30 @@ function update() {
 
 function hitFirePlayer(player, firePlayer) {
     if (isIceAttacking) {
+        // Reduce red health
         redHealth -= 10;
+
         console.log("Red health reduced to:", redHealth); // Debugging
-        if (redHealth < 0) redHealth = 0;
-        if (redHealth <= 0) {
+
+        // Ensure health doesn't go below 0
+        if (redHealth < 0) {
+            redHealth = 0;
+        }
+
+        // Update the health bar's crop based on the new health percentage
+        redHealthFill.setCrop(0, 0, redHealth * (redHealthFill.width / 100), redHealthFill.height);
+
+        // Play hurt animation
+        if (redHealth > 0) {
+            firePlayer.anims.play('fire_hurt', true);
+        } else {
+            // Play death animation and show Game Over text
+            firePlayer.anims.play('fire_dead', true);
             gameOverText.setVisible(true);
         }
     }
 }
+
 
 function hitPlayer(firePlayer, player) {
     if (isAttacking) {
