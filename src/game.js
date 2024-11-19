@@ -29,7 +29,6 @@ var redHealth = 100,
 var gameOverText;
 
 function preload() {
-<<<<<<< HEAD
   this.load.image("bg", "assets/War.png");
   this.load.image("road", "assets/roadnew.png");
   this.load.image("redhealth", "assets/health/red_meter.png");
