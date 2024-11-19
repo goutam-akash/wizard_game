@@ -28,18 +28,26 @@ var redHealth = 100, blueHealth = 100; // Initial health for both players
 var gameOverText;
 
 function preload() {
+
+    // scnario
     this.load.image('bg', 'assets/War.png');
     this.load.image('road', 'assets/roadnew.png');
     this.load.image('redhealth', 'assets/health/red_meter.png');
     this.load.image('bluehealth', 'assets/health/blue_meter.png');
     this.load.image('redfill', 'assets/health/redfill.png');
     this.load.image('bluefill', 'assets/health/bluefill.png');
+    this.load.audio('backgroundMusic', 'assets/soundeffcts/Battlefield(loop).mp3');
+
+    // ice player
     this.load.spritesheet('m1', 'assets/m1/Walk1.png', { frameWidth: 193, frameHeight: 300 });
-    this.load.spritesheet('fire_walk', 'assets/m2/walk_fire123.png', { frameWidth: 108, frameHeight: 300 });
-    this.load.spritesheet('fire_attack', 'assets/m2/flame_new.png', { frameWidth: 504, frameHeight: 325 });
     this.load.spritesheet('ice_attack', 'assets/m1/attack_ice.png', { frameWidth: 514, frameHeight: 300 });
     this.load.spritesheet('ice_hurt','assets/m1/Hurt.png', { frameWidth: 210, frameHeight: 275 });
     this.load.spritesheet('ice_dead','assets/m1/dead.png', { frameWidth: 406, frameHeight: 300 });
+    
+    // fire player
+    this.load.audio('fireAttackSound', 'assets/soundeffcts/Fireball 3.wav');
+    this.load.spritesheet('fire_walk', 'assets/m2/walk_fire123.png', { frameWidth: 108, frameHeight: 300 });
+    this.load.spritesheet('fire_attack', 'assets/m2/flame_new.png', { frameWidth: 504, frameHeight: 325 });
     this.load.spritesheet('fire_hurt', 'assets/m2/hurt_fire1.png', { frameWidth: 300, frameHeight: 300 });
     this.load.spritesheet('fire_dead', 'assets/m2/dead_fire1.png', { frameWidth: 300, frameHeight: 300 });
 }
@@ -51,7 +59,13 @@ function create() {
     blueHealthFill = this.add.image(327, 55, 'bluefill').setFlipX(true);;
     this.add.image(750, 60, 'redhealth');
     this.add.image(350, 60, 'bluehealth').setFlipX(true);
-
+    let backgroundMusic = this.sound.add('backgroundMusic', { loop: true, volume: 0.5 });
+    let fireAttackSound = this.sound.add('fireAttackSound', { volume: 1 });
+    
+    this.input.once('pointerdown', () => {
+        backgroundMusic.play();
+    });
+    
     var platforms = this.physics.add.staticGroup();
     platforms.create(500, 650, 'road').setOrigin(0.5, 0.5);
 
@@ -127,6 +141,13 @@ function create() {
     shiftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
     spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
+
+    this.input.keyboard.on('keydown-SHIFT', () => {
+        if (!isAttacking) {
+            fireAttackSound.play();
+        }
+    });
+
     console.log("Space key initialized:", spaceKey); // Debugging
 }
 function update() {
@@ -190,22 +211,22 @@ function update() {
 
     // Fire attack for firePlayer
     if (shiftKey.isDown && !isAttacking) {
-        console.log("Fire attack initiated"); // Debugging
+        console.log("Fire attack initiated");
         isAttacking = true;
-
+    
         // Play fire attack animation
         firePlayer.anims.play('fire_attack', true);
-
+    
+        // Verificar colisão durante a animação
+        this.physics.overlap(firePlayer, player, hitPlayer, null, this);
+    
         // Listen for animation completion
         firePlayer.on('animationcomplete', (animation) => {
             if (animation.key === 'fire_attack') {
-                console.log("Fire attack animation complete"); // Debugging
-                isAttacking = false; // Reset attack state
+                console.log("Fire attack animation complete");
+                isAttacking = false;
             }
         });
-
-        // Check collision during the fire attack
-        this.physics.overlap(firePlayer, player, hitPlayer, null, this);
     }
 
     // Update health bars
