@@ -17,19 +17,16 @@ var config = {
 };
 
 var game = new Phaser.Game(config);
+
 var player, firePlayer;
-var cursors, shiftKey, aKey, dKey, spaceBar, fKey;
+var cursors, aKey, dKey, wKey, shiftKey;
 var background;
-var isTweening = false;
-var isJumping = false;
-var healthPercentage = 1.0;
-var flameJet;
-var isCasting = false;  // Control for casting the spell
-var cooldown = 3000;    // Cooldown time in milliseconds (3 seconds)
-var lastCastTime = 0;   // Control for the last time the spell was cast
+var redHealthFill, blueHealthFill;
+var isAttacking = false;
+var redHealth = 100, blueHealth = 100; // Initial health for both players
+var gameOverText;
 
 function preload() {
-    // Load existing assets
     this.load.image('bg', 'assets/War.png');
     this.load.image('road', 'assets/roadnew.png');
     this.load.spritesheet('m1', 'assets/m1/Walk1.png', { frameWidth: 193, frameHeight: 300 });
@@ -37,198 +34,147 @@ function preload() {
     this.load.image('bluehealth', 'assets/health/blue_meter.png');
     this.load.image('redfill', 'assets/health/redfill.png');
     this.load.image('bluefill', 'assets/health/bluefill.png');
-
-    // Load firePlayer animations (idle, walk, run, jump, and flame attack)
-    this.load.spritesheet('fire_idle', 'assets/m2/idle_fire.png', { frameWidth: 68, frameHeight: 68 });
-    this.load.spritesheet('fire_walk', 'assets/m2/walk_fire.png', { frameWidth: 68, frameHeight: 68 });
-    this.load.spritesheet('fire_run', 'assets/m2/run_fire.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('fire_jump', 'assets/m2/jump_fire.png', { frameWidth: 72, frameHeight: 72 });
-    this.load.spritesheet('fire_dead', 'assets/m2/dead_fire.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('fire_hurt', 'assets/m2/hurt_fire.png', { frameWidth: 64, frameHeight: 64 });
-
-    // Load the flame jet spell
-    this.load.spritesheet('flame_jet_fire', 'assets/m2/flame_jet_fire.png', { frameWidth: 118, frameHeight: 118 });
-    this.load.spritesheet('fire_attack1', 'assets/m2/attack1_fire.png', { frameWidth: 76, frameHeight: 76 });
-
+    this.load.spritesheet('fire_walk', 'assets/m2/walk_fire123.png', { frameWidth: 108, frameHeight: 300 });
+    this.load.spritesheet('fire_attack', 'assets/m2/flame_new.png', { frameWidth: 504, frameHeight: 325 });
 }
 
 function create() {
-    // Create the background
     background = this.add.tileSprite(0, 0, 3000, 600, 'bg').setOrigin(0.5, 0);
+    redHealthFill = this.add.image(774, 55, 'redfill');
+    blueHealthFill = this.add.image(327, 55, 'bluefill')
     this.add.image(750, 60, 'redhealth');
     this.add.image(350, 60, 'bluehealth').setFlipX(true);
 
-    redHealthFill = this.add.image(774, 55, 'redfill');
-    blueHealthFill = this.add.image(327, 55, 'bluefill').setFlipX(true);
+    
 
     var platforms = this.physics.add.staticGroup();
     platforms.create(500, 650, 'road').setOrigin(0.5, 0.5);
 
-    // Create player m1
-    player = this.physics.add.sprite(100, 100, 'm1');
+    player = this.physics.add.sprite(167, 100, 'm1');
+    player.setBounce(0.2).setCollideWorldBounds(true);
     this.physics.add.collider(player, platforms);
-    player.setBounce(0.2);
-    player.setCollideWorldBounds(true);
 
-    // Create firePlayer
-    firePlayer = this.physics.add.sprite(300, 100, 'fire_idle');
-    firePlayer.setScale(2);
+    firePlayer = this.physics.add.sprite(900, 100, 'fire_walk').setFlipX(true);
+    firePlayer.setBounce(0.2).setCollideWorldBounds(true);
     this.physics.add.collider(firePlayer, platforms);
-    firePlayer.setCollideWorldBounds(true);
-    flameJet = this.add.sprite(firePlayer.x, firePlayer.y, 'flame_jet_fire');
-    flameJet.setScale(2);
-    flameJet.setVisible(false);
+    gameOverText = this.add.text(400, 300, 'GAME OVER', { fontSize: '64px', fill: '#ff0000' }).setOrigin(0.5, 0.5);
+    gameOverText.setVisible(false); // Initially hidden
 
-    // FirePlayer animations
-    this.anims.create({
-        key: 'fire_idle',
-        frames: this.anims.generateFrameNumbers('fire_idle', { start: 0, end: 6 }),
-        frameRate: 10,
-        repeat: -1
-    });
-
+    // Animations
     this.anims.create({
         key: 'fire_walk',
         frames: this.anims.generateFrameNumbers('fire_walk', { start: 0, end: 5 }),
         frameRate: 10,
         repeat: -1
     });
-
-    player.body.setGravityY(300);
-    gameOverText = this.add.text(config.width / 2, config.height / 2, 'Game Over', {
-        fontSize: '64px',
-        fill: '#ff0000', 
-    }).setOrigin(0.5).setVisible(false);
-    
     this.anims.create({
-        key: 'fire_run',
-        frames: this.anims.generateFrameNumbers('fire_run', { start: 0, end: 5 }),
-        frameRate: 12,
-        repeat: -1
+        key: 'fire_attack',
+        frames: this.anims.generateFrameNumbers('fire_attack', { start: 0, end: 14 }),
+        frameRate: 10,
+        repeat: 0 // Play the attack animation once
     });
-
     this.anims.create({
-        key: 'fire_jump',
-        frames: this.anims.generateFrameNumbers('fire_jump', { start: 0, end: 8 }),
+        key: 'm1',
+        frames: this.anims.generateFrameNumbers('m1', { start: 0, end: 6 }),
         frameRate: 10,
         repeat: -1
     });
 
-    this.anims.create({
-        key: 'fire_attack1',
-        frames: this.anims.generateFrameNumbers('fire_attack1', { start: 0, end: 5 }), // 6 frames
-        frameRate: 10,
-        repeat: 0 // Do not repeat
-    });
-
-    this.anims.create({
-        key: 'fire_dead',
-        frames: this.anims.generateFrameNumbers('fire_dead', { start: 0, end: 5 }), // 6 frames
-        frameRate: 3,
-        repeat: 0
-    });
-
-    this.anims.create({
-        key: 'fire_hurt',
-        frames: this.anims.generateFrameNumbers('fire_hurt', { start: 0, end: 2 }), // 3 frames
-        frameRate: 3,
-        repeat: 0
-    });
-
-    firePlayer.play('fire_idle');
-
-    // Flame jet spell animation
-    this.anims.create({
-        key: 'flame_jet',
-        frames: this.anims.generateFrameNumbers('flame_jet_fire', { start: 0, end: 13 }), // 14 frames (0 to 13)
-        frameRate: 15,
-        repeat: 0 // The spell should only happen once per activation
-    });
-
-    // Add control keys
     cursors = this.input.keyboard.createCursorKeys();
-    shiftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
-    spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    fKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F); // Key for casting the spell
-    attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);  // Key 1 for attack
-    hurtKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);   // Key 2 to get hurt
-    deadKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE); // Key 3 to die
     aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
     dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+    shiftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
 }
-var isAttacking = false;
-var isHurt = false;
-var isDead = false;
 
 function update() {
-    const currentTime = this.time.now;
-    if (isDead || isHurt || isAttacking) {
-        // If the player is dead, hurt, or attacking, prevent other controls
-        return;
-    }
-    // FirePlayer controls
-    if (shiftKey.isDown && (cursors.right.isDown || cursors.left.isDown)) {
-        firePlayer.setVelocityX(cursors.right.isDown ? 240 : -240);
-        firePlayer.anims.play('fire_run', true);
-        firePlayer.setFlipX(cursors.left.isDown);
-    } else if (cursors.right.isDown) {
-        firePlayer.setVelocityX(160);
-        firePlayer.anims.play('fire_walk', true);
-        firePlayer.setFlipX(false);
-    } else if (cursors.left.isDown) {
-        firePlayer.setVelocityX(-160);
-        firePlayer.anims.play('fire_walk', true);
-        firePlayer.setFlipX(true);
-    } else if (firePlayer.body.touching.down && spaceBar.isDown && !isJumping) {
-        firePlayer.setVelocityY(-330); 
-        firePlayer.anims.play('fire_jump', true);
-        isJumping = true;
-    } else if (!firePlayer.body.touching.down) {
-        firePlayer.anims.play('fire_jump', true);
-    } else {
-        firePlayer.setVelocityX(0);
-        firePlayer.anims.play('fire_idle', true);
-        isJumping = false;
+    // Movement for firePlayer
+    if (!isAttacking) {
+        if (cursors.right.isDown) {
+            firePlayer.setVelocityX(160);
+            firePlayer.anims.play('fire_walk', true);
+            firePlayer.setFlipX(false);
+        } else if (cursors.left.isDown) {
+            firePlayer.setVelocityX(-160);
+            firePlayer.anims.play('fire_walk', true);
+            firePlayer.setFlipX(true);
+        } else {
+            firePlayer.setVelocityX(0);
+            firePlayer.anims.stop();
+        }
+
+        // Jump for firePlayer using UP arrow
+        if (cursors.up.isDown && firePlayer.body.touching.down) {
+            firePlayer.setVelocityY(-330);
+        }
     }
 
-    // Cast the fire spell (F key) with cooldown
-    if (Phaser.Input.Keyboard.JustDown(fKey) && !isCasting && currentTime - lastCastTime >= cooldown) {
-        isCasting = true;
-        lastCastTime = currentTime;
-
-        // Position the flameJet based on firePlayer's position
-        flameJet.setPosition(firePlayer.x + (firePlayer.flipX ? -60 : 60), firePlayer.y);
-        flameJet.setFlipX(firePlayer.flipX);  // Flip the spell if the player is facing left
-        flameJet.setVisible(true);
-        flameJet.anims.play('flame_jet');
-
-        flameJet.on('animationcomplete', () => {
-            flameJet.setVisible(false);
-            isCasting = false;
-        });
-    }
-
-    // Attacking with Key 1
-    if (Phaser.Input.Keyboard.JustDown(attackKey)) {
+    // Fire attack for firePlayer using SHIFT
+    if (shiftKey.isDown && !isAttacking) {
         isAttacking = true;
-        firePlayer.anims.play('fire_attack1', true);
+        firePlayer.anims.play('fire_attack', true);
         firePlayer.on('animationcomplete', () => {
-            isAttacking = false;
+            isAttacking = false; // Reset attack state after animation ends
         });
+
+        // Collision check for attack
+        this.physics.overlap(firePlayer, player, hitPlayer, null, this);
     }
 
-    // Taking damage with Key 2
-    if (Phaser.Input.Keyboard.JustDown(hurtKey)) {
-        isHurt = true;
-        firePlayer.anims.play('fire_hurt', true);
-        firePlayer.on('animationcomplete', () => {
-            isHurt = false;
-        });
+    // Movement for player
+    if (aKey.isDown) {
+        player.setVelocityX(-160);
+        player.anims.play('m1', true); // Update to player animation if needed
+        player.setFlipX(true);
+    } else if (dKey.isDown) {
+        player.setVelocityX(160);
+        player.anims.play('m1', true); // Update to player animation if needed
+        player.setFlipX(false);
+    } else {
+        player.setVelocityX(0);
+        player.anims.stop();
     }
 
-    // Dying with Key 3
-    if (Phaser.Input.Keyboard.JustDown(deadKey)) {
-        isDead = true;
-        firePlayer.anims.play('fire_dead', true);
+    // Jump for player using W key
+    if (wKey.isDown && player.body.touching.down) {
+        player.setVelocityY(-330);
+    }
+
+    // Update health bars using setCrop
+    redHealthFill.setCrop(0, 0, redHealth * 5, redHealthFill.height);
+    blueHealthFill.setFlipX(true);
+    // Calculate the width based on the health percentage
+    var cropWidth = blueHealth * 2.5;  // Adjust based on scaling factor
+
+// Set origin to the right (to crop from left)
+  // Align the health bar to the right
+
+// Set the crop so that the left part is cut, but the right corner stays intact
+    blueHealthFill.setCrop(blueHealthFill.width - cropWidth, 0, cropWidth, blueHealthFill.height);
+
+}
+
+// Collision function for fire attack
+// Adjust this part to ensure the health bar updates properly:
+function hitPlayer(firePlayer, player) {
+    if (isAttacking) {
+        // Reduce health by 10% when firePlayer hits player
+        blueHealth -= 10;
+
+        // Ensure health doesn't go below 0
+        if (blueHealth < 0) {
+            blueHealth = 0;
+        }
+
+        // Update the health bar's crop based on the new health percentage
+        // Here, we are using the correct scaling (multiply by the actual health bar width)
+        blueHealthFill.setCrop(0, 0, blueHealth * (blueHealthFill.width / 100), blueHealthFill.height);
+        console.log('Blue Health:', blueHealth); // Debugging line
+
+        // If health reaches 0 or below, show the Game Over text
+        if (blueHealth <= 0) {
+            gameOverText.setVisible(true); // Show Game Over text
+        }
     }
 }
+
