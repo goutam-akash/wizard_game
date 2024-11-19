@@ -161,14 +161,13 @@ function create() {
 
   console.log("Space key initialized:", spaceKey); // Debugging
 
+  this.input.keyboard.on("keydown-SHIFT", () => {
+    if (!isIceAttacking) {
+      fireAttackSound.play();
+    }
+  });
 
-    this.input.keyboard.on('keydown-SHIFT', () => {
-        if (!isAttacking) {
-            fireAttackSound.play();
-        }
-    });
-
-    console.log("Space key initialized:", spaceKey); // Debugging
+  console.log("Space key initialized:", spaceKey); // Debugging
 }
 function update() {
   // Player movement
@@ -273,40 +272,49 @@ function update() {
   // Call this function inside the update function
   updateHealthBars();
 
-    // Fire attack for firePlayer
-    if (shiftKey.isDown && !isAttacking) {
-        console.log("Fire attack initiated");
-        isAttacking = true;
-    
-        // Play fire attack animation
-        firePlayer.anims.play('fire_attack', true);
-    
-        // Verificar colisão durante a animação
-        this.physics.overlap(firePlayer, player, hitPlayer, null, this);
-    
-        // Listen for animation completion
-        firePlayer.on('animationcomplete', (animation) => {
-            if (animation.key === 'fire_attack') {
-                console.log("Fire attack animation complete");
-                isAttacking = false;
-            }
-        });
-    }
+  // Fire attack for firePlayer
+  if (shiftKey.isDown && !isIceAttacking) {
+    console.log("Fire attack initiated");
+    isIceAttacking = true;
 
-    // Update health bars
-    function updateHealthBars() {
-        // Update red health bar
-        var redCropWidth = redHealth * 5; // Adjust multiplier if necessary
-        redHealthFill.setCrop(0, 0, Math.max(0, redCropWidth), redHealthFill.height); // Ensure no negative width
-    
-        // Update blue health bar
-        var blueCropWidth = blueHealth * 2.5; // Adjust multiplier if necessary
-        blueHealthFill.setCrop(blueHealthFill.width - Math.max(0, blueCropWidth), 0, Math.max(0, blueCropWidth), blueHealthFill.height);
-    }
-    
-    // Call this function inside the update function
-    updateHealthBars();
-    
+    // Play fire attack animation
+    firePlayer.anims.play("fire_attack", true);
+
+    // Verificar colisão durante a animação
+    this.physics.overlap(firePlayer, icePlayer, hitPlayer, null, this);
+
+    // Listen for animation completion
+    firePlayer.on("animationcomplete", (animation) => {
+      if (animation.key === "fire_attack") {
+        console.log("Fire attack animation complete");
+        isIceAttacking = false;
+      }
+    });
+  }
+
+  // Update health bars
+  function updateHealthBars() {
+    // Update red health bar
+    var redCropWidth = redHealth * 5; // Adjust multiplier if necessary
+    redHealthFill.setCrop(
+      0,
+      0,
+      Math.max(0, redCropWidth),
+      redHealthFill.height
+    ); // Ensure no negative width
+
+    // Update blue health bar
+    var blueCropWidth = blueHealth * 2.5; // Adjust multiplier if necessary
+    blueHealthFill.setCrop(
+      blueHealthFill.width - Math.max(0, blueCropWidth),
+      0,
+      Math.max(0, blueCropWidth),
+      blueHealthFill.height
+    );
+  }
+
+  // Call this function inside the update function
+  updateHealthBars();
 }
 
 function hitFirePlayer(icePlayer, firePlayer) {
